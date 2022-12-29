@@ -24,4 +24,4 @@ not optimize the load of y outside of the loop.
 ## References
 [1] https://stefansf.de/post/type-based-alias-analysis/
 ## Acknowledgements
-Thank MaskRay (Fangrui Song) for teaching me to use fenced code block which make the paper much better. Thank Mingjie Xu for teaching me the technique details of TBAA in LLVM.
+Thank MaskRay (Fangrui Song) for teaching me to use fenced code block which make the paper much better. Thank Mingjie Xu for teaching me the technique details of TBAA in LLVM. Thank Prof Wenchang Shi for your encouragement.
