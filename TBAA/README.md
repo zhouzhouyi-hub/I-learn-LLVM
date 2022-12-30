@@ -4,7 +4,7 @@ This is how I learn TBAA
 TBAA (Type-Based Alias Analysis) in LLVM is an optimization that remove unneeded
 computations (for example, from loop) based on type information[1]. 
 
-For example, consider following two functions:
+For example, consider following two functions (tbaa3.cpp):
 ```
 1  void bar(int *x, long *y) {
 2    for (int i = 0; i < 1000; ++i)
@@ -21,6 +21,11 @@ can not affect the values in y,
 so we can optimize the load of y outside of the loop. But, in function foo, 
 x and y have same type 'int', store to x[i] in line 7 may affect the values in y, we can
 not optimize the load of y outside of the loop.
+
+Now we see how LLVM actually do to optimize above code:
+$clang++ -S -O -emit-llvm tbaa3.cpp
+We get tbaa3.ll which is in form of LLVM IR (LLVM IR is a low-level intermediate representation used by the LLVM compiler framework)
+
 ## References
 [1] https://stefansf.de/post/type-based-alias-analysis/
 ## Acknowledgements
