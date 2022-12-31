@@ -28,6 +28,8 @@ $clang++ -S -O -emit-llvm tbaa3.cpp
 
 We get tbaa3.ll which is in form of LLVM IR (LLVM IR is a low-level intermediate representation used by the LLVM compiler framework)
 
+![TBAA Directed Graphy](Images/TBAA-1.png)
+
 ## References
 [1] https://stefansf.de/post/type-based-alias-analysis/
 
