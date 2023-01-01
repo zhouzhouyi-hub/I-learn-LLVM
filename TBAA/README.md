@@ -22,6 +22,8 @@ so we can optimize the load of y outside of the loop. But, in function foo,
 x and y have same type 'int', store to x[i] in line 7 may affect the values in y, we can
 not optimize the load of y outside of the loop.
 
+## LLVM TBAA Process
+
 Now we see how LLVM actually do to optimize above code by invoking:
 
 $clang++ -S -O -emit-llvm tbaa3.cpp
