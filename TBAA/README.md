@@ -30,6 +30,37 @@ $clang++ -S -O -emit-llvm tbaa3.cpp
 
 We get tbaa3.ll which is in form of LLVM IR (LLVM IR is a low-level intermediate representation used by the LLVM compiler framework)
 
+Let's examine generated LLVM IR of function bar which is a little lengthy (tbaa3.ll) 
+
+```
+ 7 define dso_local void @_Z3barPiPl(ptr nocapture noundef writeonly %x, ptr nocapture noundef readonly %y) local_unnamed_addr #0 {
+ 8 entry:
+ 9  %0 = load i64, ptr %y, align 8, !tbaa !5
+10  %1 = trunc i64 %0 to i32
+11  %conv = add i32 %1, 42
+12  br label %for.body
+13
+14 for.cond.cleanup:                                 ; preds = %for.body
+15  ret void
+16
+17 for.body:                                         ; preds = %entry, %for.body
+18  %indvars.iv = phi i64 [ 0, %entry ], [ %indvars.iv.next, %for.body ]
+19  %arrayidx = getelementptr inbounds i32, ptr %x, i64 %indvars.iv
+20  store i32 %conv, ptr %arrayidx, align 4, !tbaa !9
+21  %indvars.iv.next = add nuw nsw i64 %indvars.iv, 1
+22  %exitcond.not = icmp eq i64 %indvars.iv.next, 1000
+23  br i1 %exitcond.not, label %for.cond.cleanup, label %for.body, !llvm.loop !11
+24 }
+
+55 !5 = !{!6, !6, i64 0}
+56 !6 = !{!"long", !7, i64 0}
+57 !7 = !{!"omnipotent char", !8, i64 0}
+58 !8 = !{!"Simple C++ TBAA"}
+59 !9 = !{!10, !10, i64 0}
+60 !10 = !{!"int", !7, i64 0}
+
+```
+
 ![TBAA Directed Graphy](Images/TBAA-0.png)
 
 ## References
