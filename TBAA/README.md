@@ -61,7 +61,7 @@ Let's examine generated LLVM IR of function bar which is a little lengthy (tbaa3
 
 ```
 
-Let explain what's above LLVM IR mean. Line 7 'define' means this is a function define instead of a 'declare', 'dso_local' means will resolve to a symbol within the same linkage unit.
+Let explain what's above LLVM IR mean. Line 7 'define' means this is a function define instead of a 'declare', 'dso_local' means this function will resolve to a symbol within the same linkage unit.
 
 
 ![TBAA Directed Graphy](Images/TBAA-0.png)
