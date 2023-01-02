@@ -2,7 +2,7 @@
 This is my little exploration of dso_local
 ## Introduction
 Official document of LLVM says "'dso_local' means this function will resolve to a symbol within the same linkage unit". As a beginner, I think I need some example to understand that definition, so I did some exploration.
-## Example LLVM IR
+## Generate example LLVM IR
 Firstly I construct a C program:
 
 ```
@@ -43,7 +43,7 @@ define dso_local i32 @bar() #0 {
   ret i32 0
 }
 ```
-## Compile LLVM IR to assembly file
+## Compile LLVM IR to assembly files
 By invoking: llc  -relocation-model=pic hello.ll, I get hello.s
 
 By invoking: llc  -relocation-model=pic hello1.ll, I get hello1.s
@@ -66,7 +66,51 @@ I can see the difference between hello.s and hello1.s, diff -u hello.s hello1.s:
  	.cfi_def_cfa %rsp, 8
 ```
 PLT mean position 'procedure linkage table' 
-## Assemble assembly file to object file
+## Assemble assembly file to object files
 By invoking: clang++ -fpic -c hello.s, I get hello.o
 
 By invoking: clang++ -fpic -c hello1.s, I get hello1.o
+## Display linkage information
+By invoking: objdump -d hello.o, I get
+```
+0000000000000000 <hello>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	5d                   	pop    %rbp
+   5:	c3                   	ret    
+   6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+   d:	00 00 00 
+
+0000000000000010 <bar>:
+  10:	55                   	push   %rbp
+  11:	48 89 e5             	mov    %rsp,%rbp
+  14:	e8 e7 ff ff ff       	call   0 <hello>
+  19:	31 c0                	xor    %eax,%eax
+  1b:	5d                   	pop    %rbp
+  1c:	c3                   	ret  
+
+```
+
+At offset 0x14, 'e8' is a Intel call with a relative offset, 'e7 ff ff ff' is 32 bit signed number -25, 
+offset of next instruction is 0x19, 0x19 - 25 = 0, 0 is exactly the offset of function hello.  
+
+By invoking: objdump -d hello1.o, I get
+```
+0000000000000000 <hello>:
+   0:	55                   	push   %rbp
+   1:	48 89 e5             	mov    %rsp,%rbp
+   4:	5d                   	pop    %rbp
+   5:	c3                   	ret    
+   6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+   d:	00 00 00 
+
+0000000000000010 <bar>:
+  10:	55                   	push   %rbp
+  11:	48 89 e5             	mov    %rsp,%rbp
+  14:	e8 00 00 00 00       	call   19 <bar+0x9>
+  19:	31 c0                	xor    %eax,%eax
+  1b:	5d                   	pop    %rbp
+  1c:	c3                   	ret 
+```
+
+At offset 14, the 32 bit offset of Intel 'e8' call is 0, which will filled later by linker and loader.
