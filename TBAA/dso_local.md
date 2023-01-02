@@ -14,3 +14,32 @@ int bar()
         return 0;
 }
 ```
+
+Then I use clang to generate LLVM IR: clang -S -emit-llvm hello.c, I get [hello.ll](examples/hello.ll))
+
+```
+define dso_local void @hello() #0 {
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @bar() #0 {
+  call void @hello()
+  ret i32 0
+}
+```
+
+Then I copy hello.ll to hello1.ll: cp hello.ll hello1.ll, and remove dso_local definition from function hello, I get [hello1.ll](examples/hello1.ll)
+
+
+```
+define void @hello() #0 {
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @bar() #0 {
+  call void @hello()
+  ret i32 0
+}
+```
