@@ -114,3 +114,12 @@ By invoking: objdump -d hello1.o, I get
 ```
 
 At offset 14, the 32 bit offset of Intel 'e8' call is 0, which will filled later by linker and loader.
+
+By invoking llvm-readelf -r hello1.o, I get:
+```
+Relocation section '.rela.text' at offset 0x150 contains 1 entries:
+    Offset             Info             Type               Symbol's Value  Symbol's Name + Addend
+0000000000000015  0000000300000004 R_X86_64_PLT32         0000000000000000 hello - 4
+```
+
+Which means we need loader and linker fill (relocate) the content (the 32 bit offset field of Intel 'e8' call) at offset 15 of text section.  
