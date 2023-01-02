@@ -43,3 +43,26 @@ define dso_local i32 @bar() #0 {
   ret i32 0
 }
 ```
+## Compile LLVM IR to assembling file
+By invoking: llc  -relocation-model=pic hello.ll, I get hello.s
+
+By invoking: llc  -relocation-model=pic hello1.ll, I get hello1.s
+
+I can see the difference between hello.s and hello1.s, diff -u hello.s hello1.s:
+```
+ hello:                                  # @hello
+-.Lhello$local:
+ 	.cfi_startproc
+ # %bb.0:
+ 	pushq	%rbp
+@@ -31,7 +30,7 @@
+ 	.cfi_offset %rbp, -16
+ 	movq	%rsp, %rbp
+ 	.cfi_def_cfa_register %rbp
+-	callq	.Lhello$local
++	callq	hello@PLT
+ 	xorl	%eax, %eax
+ 	popq	%rbp
+ 	.cfi_def_cfa %rsp, 8
+```
+PLT mean position 'procedure linkage table' 
