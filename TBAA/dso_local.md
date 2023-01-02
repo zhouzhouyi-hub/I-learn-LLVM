@@ -43,7 +43,7 @@ define dso_local i32 @bar() #0 {
   ret i32 0
 }
 ```
-## Compile LLVM IR to assembling file
+## Compile LLVM IR to assembly file
 By invoking: llc  -relocation-model=pic hello.ll, I get hello.s
 
 By invoking: llc  -relocation-model=pic hello1.ll, I get hello1.s
@@ -66,3 +66,7 @@ I can see the difference between hello.s and hello1.s, diff -u hello.s hello1.s:
  	.cfi_def_cfa %rsp, 8
 ```
 PLT mean position 'procedure linkage table' 
+## Assemble assembly file to object file
+By invoking: clang++ -fpic -c hello.s, I get hello.o
+
+By invoking: clang++ -fpic -c hello1.s, I get hello1.o
