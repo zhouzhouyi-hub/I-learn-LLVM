@@ -124,4 +124,5 @@ Relocation section '.rela.text' at offset 0x150 contains 1 entries:
 
 Which means we need loader and linker fill (relocate) the content (the 32 bit offset field of Intel 'e8' call) at offset 15 of text section.  
 ## Runtime
-![Linker and load do to resolve hello](Images/dso_local.png)
+
+We can see from ![Linker and load do to resolve hello](Images/dso_local.png) that in hello.so (link unit) function hello is resoved within the link unit, while in hello1.so (link unit) function hello is resolved externally by looking up PLT (Procedure Linkage Table)
