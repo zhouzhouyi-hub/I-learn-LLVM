@@ -123,3 +123,5 @@ Relocation section '.rela.text' at offset 0x150 contains 1 entries:
 ```
 
 Which means we need loader and linker fill (relocate) the content (the 32 bit offset field of Intel 'e8' call) at offset 15 of text section.  
+## Runtime
+![Linker and load do to resolve hello](Images/dso_local.png)
