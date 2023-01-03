@@ -128,4 +128,4 @@ Which means we need loader and linker fill (relocate) the content (the 32 bit of
  
 We can see from above figure that in hello.so (link unit) function hello is resoved within the link unit, while in hello1.so (link unit) function hello is resolved externally by looking up PLT (Procedure Linkage Table)
 ## Conclusion
-dso_local tell loader and linker to resolve the function within the link unit.
+dso_local tells loader and linker to resolve the function within the link unit.
