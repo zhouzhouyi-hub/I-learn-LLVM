@@ -129,5 +129,9 @@ Which means we need loader and linker fill (relocate) the content (the 32 bit of
 We can see from above figure that in hello.so (link unit) function hello is resoved within the link unit, while in hello1.so (link unit) function hello is resolved externally by looking up PLT (Procedure Linkage Table). So dso_local in hello.ll make function hello to avoid looking up PLT, which saves time.
 ## Conclusion
 dso_local tells loader and linker to resolve the function within the link unit, which saves time.
+## Further Study
+This section is mainly derived from an example script by MaskRay[1]
 ## Acknowledgements
 Thank MaskRay (Fangrui Song) for your advices and guidance on linker.
+## References
+[1] https://gist.github.com/MaskRay/c03a90922003df666551589f1629df22
