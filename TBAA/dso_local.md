@@ -130,7 +130,7 @@ We can see from above figure that in hello.so (link unit) function hello is reso
 ## Conclusion
 dso_local tells loader and linker to resolve the function within the link unit, which saves time.
 ## Further Study
-This section is mainly derived from an example script by MaskRay[1]
+This section is mainly inspired from an example script by MaskRay[1]
 ## Acknowledgements
 Thank MaskRay (Fangrui Song) for your advices and guidance on linker.
 ## References
