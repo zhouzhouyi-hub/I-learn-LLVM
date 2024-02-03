@@ -47,4 +47,38 @@ struct isa_impl_wrap<To, FromTy, FromTy> {
   }
 };
 
+struct Task
+{
+  int mId;
+  Task(int id ) :mId(id)
+  {
+  }
+  ~Task()
+  {
+
+  }
+  static bool classof(const Task D)
+  {return true;}
+};
+
+struct Task1
+{
+  int mId;
+  Task1(int id ) :mId(id)
+  {
+
+  }
+  ~Task1()
+  {
+
+  }
+  static bool classof(const Task D)
+  {return true;}
+};  
+  
+int main()
+{
+    std::unique_ptr<Task> taskPtr(new Task(23));
+    bool b = isa_impl_cl<Task1, std::unique_ptr<Task>>::doit(taskPtr); 
+}
 }
