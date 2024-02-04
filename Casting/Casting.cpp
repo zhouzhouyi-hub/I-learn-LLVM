@@ -117,10 +117,11 @@ struct CastInfo : public CastIsPossible<To, From> {
   }
 };
 #endif  
+}
+
 int main()
 {
-    const std::unique_ptr<Task> taskPtr(new Task(23));
-    bool b = isa_impl_cl<Task1, std::unique_ptr<Task> const>::doit(taskPtr);
-    return 0;
-}
+  const std::unique_ptr<llvm::Task> taskPtr(new llvm::Task(23));
+  bool b = llvm::isa_impl_cl<llvm::Task1, std::unique_ptr<llvm::Task> const>::doit(taskPtr);
+  return 0;
 }
