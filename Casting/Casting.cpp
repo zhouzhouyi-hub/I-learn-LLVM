@@ -83,10 +83,44 @@ struct Task1
   static bool classof(const Task * D)
   {return true;}
 };  
+
+template <typename To, typename From, typename Enable = void>
+struct CastIsPossible {
+  static inline bool isPossible(const From &f) {
+    return isa_impl_wrap<
+      To, const From,
+      typename simplify_type<const From>::SimpleType>::doit(f);
+  }
+};
+#if 0
+template <typename To, typename From, typename Enable = void>
+struct CastInfo : public CastIsPossible<To, From> {
+  using Self = CastInfo<To, From, Enable>;
   
+  using CastReturnType = typename cast_retty<To, From>::ret_type;
+  
+  static inline CastReturnType doCast(const From &f) {
+    return cast_convert_val<
+      To, From,
+      typename simplify_type<From>::SimpleType>::doit(const_cast<From &>(f));
+  }
+  
+  // This assumes that you can construct the cast return type from `nullptr`.
+  // This is largely to support legacy use cases - if you don't want this
+  // behavior you should specialize CastInfo for your use case.
+  static inline CastReturnType castFailed() { return CastReturnType(nullptr); }
+  
+  static inline CastReturnType doCastIfPossible(const From &f) {
+    if (!Self::isPossible(f))
+      return castFailed();
+    return doCast(f);
+  }
+};
+#endif  
 int main()
 {
     const std::unique_ptr<Task> taskPtr(new Task(23));
-    bool b = isa_impl_cl<Task1, std::unique_ptr<Task> const>::doit(taskPtr); 
+    bool b = isa_impl_cl<Task1, std::unique_ptr<Task> const>::doit(taskPtr);
+    return 0;
 }
 }
