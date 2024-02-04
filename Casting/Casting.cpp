@@ -28,6 +28,14 @@ struct isa_impl_cl<To, const std::unique_ptr<From>> {
   }
 };
 
+template <typename To, typename From>
+struct isa_impl_cl<To,  std::unique_ptr<From>> {
+  static inline bool doit( std::unique_ptr<From> &Val) {
+    return true;
+    //     return isa_impl_cl<To, From>::doit(*Val);
+  }
+};
+  
 template <typename To, typename From, typename SimpleFrom>
 struct isa_impl_wrap {
   // When From != SimplifiedType, we can simplify the type some more by using
@@ -57,7 +65,7 @@ struct Task
   {
 
   }
-  static bool classof(const Task D)
+  static bool classof(const Task *D)
   {return true;}
 };
 
@@ -72,13 +80,13 @@ struct Task1
   {
 
   }
-  static bool classof(const Task D)
+  static bool classof(const Task * D)
   {return true;}
 };  
   
 int main()
 {
-    std::unique_ptr<Task> taskPtr(new Task(23));
-    bool b = isa_impl_cl<Task1, std::unique_ptr<Task>>::doit(taskPtr); 
+    const std::unique_ptr<Task> taskPtr(new Task(23));
+    bool b = isa_impl_cl<Task1, std::unique_ptr<Task> const>::doit(taskPtr); 
 }
 }
