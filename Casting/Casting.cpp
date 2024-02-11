@@ -28,13 +28,7 @@ struct isa_impl_cl<To, const std::unique_ptr<From>> {
   }
 };
 
-template <typename To, typename From>
-struct isa_impl_cl<To,  std::unique_ptr<From>> {
-  static inline bool doit( std::unique_ptr<From> &Val) {
-    return true;
-    //     return isa_impl_cl<To, From>::doit(*Val);
-  }
-};
+
   
 template <typename To, typename From, typename SimpleFrom>
 struct isa_impl_wrap {
@@ -55,9 +49,56 @@ struct isa_impl_wrap<To, FromTy, FromTy> {
   }
 };
 
-struct Task
+template <class To, class From> struct cast_retty;
+
+template <class To, class From> struct cast_retty_impl {
+  using ret_type = To &; // Normal case, return Ty&
+};
+template <class To, class From> struct cast_retty_impl<To, const From> {
+  using ret_type = const To &; // Normal case, return Ty&
+};
+
+template <class To, class From> struct cast_retty_impl<To, From *> {
+  using ret_type = To *; // Pointer arg case, return Ty*
+};
+
+template <class To, class From> struct cast_retty_impl<To, const From *> {
+  using ret_type = const To *; // Constant pointer arg case, return const Ty*
+};
+
+template <class To, class From> struct cast_retty_impl<To, const From *const> {
+  using ret_type = const To *; // Constant pointer arg case, return const Ty*
+};
+
+template <class To, class From>
+struct cast_retty_impl<To, std::unique_ptr<From>> {
+private:
+  using PointerType = typename cast_retty_impl<To, From *>::ret_type;
+  using ResultType = std::remove_pointer_t<PointerType>;
+
+public:
+  using ret_type = std::unique_ptr<ResultType>;
+};
+
+template <class To, class From, class SimpleFrom> struct cast_retty_wrap {
+  using ret_type = typename cast_retty<To, SimpleFrom>::ret_type;
+};
+ 
+template <class To, class FromTy> struct cast_retty_wrap<To, FromTy, FromTy> {
+  using ret_type = typename cast_retty_impl<To, FromTy>::ret_type;
+};
+ 
+template <class To, class From> struct cast_retty {
+  using ret_type = typename cast_retty_wrap<
+      To, From, typename simplify_type<From>::SimpleType>::ret_type;
+};
+  
+class Task
 {
+public:
   int mId;
+    
+  Task(){}
   Task(int id ) :mId(id)
   {
   }
@@ -69,20 +110,19 @@ struct Task
   {return true;}
 };
 
-struct Task1
+class Task1:public Task
 {
-  int mId;
-  Task1(int id ) :mId(id)
+public:
+  
+  Task1() 
   {
-
   }
   ~Task1()
   {
 
   }
-  static bool classof(const Task * D)
-  {return true;}
 };  
+
 
 template <typename To, typename From, typename Enable = void>
 struct CastIsPossible {
@@ -92,36 +132,94 @@ struct CastIsPossible {
       typename simplify_type<const From>::SimpleType>::doit(f);
   }
 };
-#if 0
+
+template <class To, class From, class SimpleFrom> struct cast_convert_val {
+  static typename cast_retty<To, From>::ret_type doit(const From &Val) {
+    return cast_convert_val<To, SimpleFrom,
+                            typename simplify_type<SimpleFrom>::SimpleType>::
+        doit(simplify_type<From>::getSimplifiedValue(const_cast<From &>(Val)));
+  }
+};
+
+template <class To, class FromTy> struct cast_convert_val<To, FromTy, FromTy> {
+  static typename cast_retty<To, FromTy>::ret_type doit(const FromTy &Val) {
+    return *(std::remove_reference_t<typename cast_retty<To, FromTy>::ret_type>
+                 *)&const_cast<FromTy &>(Val);
+  }
+};
+
+template <class To, class FromTy>
+struct cast_convert_val<To, FromTy *, FromTy *> {
+  static typename cast_retty<To, FromTy *>::ret_type doit(const FromTy *Val) {
+    return (typename cast_retty<To, FromTy *>::ret_type) const_cast<FromTy *>(
+        Val);
+  }
+};
+template <typename To, typename From, typename Derived = void>
+struct UniquePtrCast : public CastIsPossible<To, From *> {
+// using Self = detail::SelfType<Derived, UniquePtrCast<To, From>>;
+  using CastResultType = std::unique_ptr<
+    std::remove_reference_t<typename cast_retty<To, From>::ret_type>>;
+ 
+  static inline CastResultType doCast(std::unique_ptr<From> &&f) {
+    return CastResultType((typename CastResultType::element_type *)f.release());
+  }
+ 
+  static inline CastResultType castFailed() { return CastResultType(nullptr); }
+  
+  /*  static inline CastResultType doCastIfPossible(std::unique_ptr<From> &f) {
+    if (!Self::isPossible(f.get()))
+      return castFailed();
+    return doCast(std::move(f));
+  }*/
+};
+
 template <typename To, typename From, typename Enable = void>
 struct CastInfo : public CastIsPossible<To, From> {
+
   using Self = CastInfo<To, From, Enable>;
   
   using CastReturnType = typename cast_retty<To, From>::ret_type;
-  
+
   static inline CastReturnType doCast(const From &f) {
     return cast_convert_val<
       To, From,
       typename simplify_type<From>::SimpleType>::doit(const_cast<From &>(f));
   }
   
-  // This assumes that you can construct the cast return type from `nullptr`.
-  // This is largely to support legacy use cases - if you don't want this
-  // behavior you should specialize CastInfo for your use case.
   static inline CastReturnType castFailed() { return CastReturnType(nullptr); }
-  
+
   static inline CastReturnType doCastIfPossible(const From &f) {
     if (!Self::isPossible(f))
       return castFailed();
     return doCast(f);
   }
 };
-#endif  
+
+template <typename To, typename From>
+struct CastInfo<To, std::unique_ptr<From>> : public UniquePtrCast<To, From> {};
+
+template <typename To, typename From>
+bool isa(const From &Val) {
+   return CastInfo<To, const From>::isPossible(Val);
+}
+  
+template <typename To, typename From>
+ decltype(auto) cast(std::unique_ptr<From> &&Val) {
+  bool b = isa<To>(Val);
+  return CastInfo<To, std::unique_ptr<From>>::doCast(std::move(Val));
+}
+  
 }
 
 int main()
 {
-  const std::unique_ptr<llvm::Task> taskPtr(new llvm::Task(23));
+  const std::unique_ptr<llvm::Task> taskPtr(new llvm::Task(/*23*/));
+  //const std::unique_ptr<llvm::Task1> taskPtr1(new llvm::Task1);
+  std::unique_ptr<llvm::Task1> taskPtr1(new llvm::Task1);
+
   bool b = llvm::isa_impl_cl<llvm::Task1, std::unique_ptr<llvm::Task> const>::doit(taskPtr);
+  //llvm::cast<llvm::Task>(std::move(taskPtr1));
+  llvm::cast<llvm::Task>(std::make_unique<llvm::Task1>());
   return 0;
 }
