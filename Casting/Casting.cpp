@@ -212,14 +212,15 @@ template <typename To, typename From>
   
 }
 
+
 int main()
 {
-  const std::unique_ptr<llvm::Task> taskPtr(new llvm::Task(/*23*/));
+  // const std::unique_ptr<llvm::Task> taskPtr(new llvm::Task(/*23*/));
   //const std::unique_ptr<llvm::Task1> taskPtr1(new llvm::Task1);
-  std::unique_ptr<llvm::Task1> taskPtr1(new llvm::Task1);
+  //std::unique_ptr<llvm::Task1> taskPtr1(new llvm::Task1);
 
-  bool b = llvm::isa_impl_cl<llvm::Task1, std::unique_ptr<llvm::Task> const>::doit(taskPtr);
+  //bool b = llvm::isa_impl_cl<llvm::Task1, std::unique_ptr<llvm::Task> const>::doit(taskPtr);
   //llvm::cast<llvm::Task>(std::move(taskPtr1));
-  llvm::cast<llvm::Task>(std::make_unique<llvm::Task1>());
+  std::unique_ptr<llvm::Task> tk = llvm::cast<llvm::Task>(std::make_unique<llvm::Task1>());
   return 0;
 }
